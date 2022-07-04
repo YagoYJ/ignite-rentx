@@ -1,14 +1,14 @@
-import express, { NextFunction, Request, Response } from "express";
 import "express-async-errors";
+import express, { NextFunction, Request, Response } from "express";
 import swaggerUi from "swagger-ui-express";
-import swaggerFile from "./swagger.json";
 
-import "./database";
+import { router } from "@routes/index";
+import { AppError } from "@shared/errors/AppError";
 
-import "./shared/container";
+import "@shared/infra/typeorm/index";
+import "@shared/container";
 
-import { router } from "./routes";
-import { AppError } from "./errors/AppError";
+import swaggerFile from "../../../swagger.json";
 
 const app = express();
 
@@ -29,6 +29,6 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-app.listen(3333, () => {
+app.listen(3334, () => {
   console.log("Server Running");
 });

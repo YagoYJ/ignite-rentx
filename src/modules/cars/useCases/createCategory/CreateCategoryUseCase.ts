@@ -1,7 +1,8 @@
+import "reflect-metadata";
 import { inject, injectable } from "tsyringe";
-import { AppError } from "../../../../errors/AppError";
 
-import { CategoriesRepository } from "../../repositories/implementations/CategoriesRepository";
+import { AppError } from "@shared/errors/AppError";
+import { ICategoriesRepository } from "@modules/cars/repositories/ICategoriesRepository";
 
 interface IRequest {
   name: string;
@@ -12,10 +13,14 @@ interface IRequest {
 class CreateCategoryUseCase {
   constructor(
     @inject("CategoriesRepository")
-    private categoriesRepository: CategoriesRepository
+    private categoriesRepository: ICategoriesRepository
   ) {}
 
   async execute({ name, description }: IRequest): Promise<void> {
+    if (!name || !description) {
+      throw new AppError("Name or description is missing");
+    }
+
     const categoryAlreadyExists = await this.categoriesRepository.findByName(
       name
     );
