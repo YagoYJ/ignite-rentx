@@ -53,8 +53,6 @@ describe("List Cars", () => {
       category_id: "category_id",
     });
 
-    console.log(cars);
-
     expect(cars).toEqual([car]);
   });
 });

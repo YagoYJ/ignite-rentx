@@ -1,6 +1,7 @@
 import { ICreateCarDTO } from "@modules/cars/dtos/ICreateCar";
 import { IListAvailableCarsDTO } from "@modules/cars/dtos/IListAvailableCars";
 import { Car } from "@modules/cars/infra/typeorm/entities/Car";
+import { usersRoutes } from "@shared/infra/http/routes/users.routes";
 
 import { ICarsRepository } from "../ICarsRepository";
 
@@ -43,7 +44,7 @@ class CarsRepositoryInMemory implements ICarsRepository {
     brand,
     category_id,
     name,
-  }: IListAvailableCarsDTO): Promise<Car[]> {
+  }: IListAvailableCarsDTO): Promise<Car[] | undefined> {
     let availableCars = this.cars.filter((car) => car.available);
 
     if (!name && !brand && !category_id) return availableCars;

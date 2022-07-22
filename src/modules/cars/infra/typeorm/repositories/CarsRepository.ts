@@ -1,8 +1,10 @@
+import { getRepository, Repository } from "typeorm";
+
+import { ICarsRepository } from "@modules/cars/repositories/ICarsRepository";
+
+import { Car } from "../entities/Car";
 import { ICreateCarDTO } from "@modules/cars/dtos/ICreateCar";
 import { IListAvailableCarsDTO } from "@modules/cars/dtos/IListAvailableCars";
-import { ICarsRepository } from "@modules/cars/repositories/ICarsRepository";
-import { getRepository, Repository } from "typeorm";
-import { Car } from "../../entities/Car";
 
 class CarsRepository implements ICarsRepository {
   private repository: Repository<Car>;
@@ -19,6 +21,8 @@ class CarsRepository implements ICarsRepository {
     fine_amount,
     license_plate,
     name,
+    specifications,
+    id,
   }: ICreateCarDTO): Promise<Car> {
     const car = this.repository.create({
       brand,
@@ -28,6 +32,8 @@ class CarsRepository implements ICarsRepository {
       fine_amount,
       license_plate,
       name,
+      specifications,
+      id,
     });
 
     await this.repository.save(car);
@@ -36,7 +42,9 @@ class CarsRepository implements ICarsRepository {
   }
 
   async findByLicensePlate(license_plate: string): Promise<Car | undefined> {
-    const car = await this.repository.findOne({ license_plate });
+    const car = await this.repository.findOne({
+      license_plate,
+    });
 
     return car;
   }
@@ -45,33 +53,41 @@ class CarsRepository implements ICarsRepository {
     brand,
     category_id,
     name,
-  }: IListAvailableCarsDTO): Promise<Car[] | undefined> {
-    const carsQuery = this.repository
+  }: IListAvailableCarsDTO): Promise<Car[]> {
+    const carsQuery = await this.repository
       .createQueryBuilder("c")
       .where("available = :available", { available: true });
 
     if (brand) {
-      carsQuery.andWhere("c.brand = :brand", { brand });
+      carsQuery.andWhere("brand = :brand", { brand });
     }
 
     if (name) {
-      carsQuery.andWhere("c.name = :name", { name });
+      carsQuery.andWhere("name = :name", { name });
     }
 
     if (category_id) {
-      carsQuery.andWhere("c.category_id = :category_id", { category_id });
+      carsQuery.andWhere("category_id = :category_id", { category_id });
     }
 
     const cars = await carsQuery.getMany();
+
     return cars;
   }
 
-  findById(id: string): Promise<Car | undefined> {
-    throw new Error("Method not implemented.");
+  async findById(id: string): Promise<Car | undefined> {
+    const car = await this.repository.findOne(id);
+    return car;
   }
 
-  updateAvailable(id: string, available: boolean): Promise<void> {
-    throw new Error("Method not implemented.");
+  async updateAvailable(id: string, available: boolean): Promise<void> {
+    await this.repository
+      .createQueryBuilder()
+      .update()
+      .set({ available })
+      .where("id = :id")
+      .setParameters({ id })
+      .execute();
   }
 }
 
