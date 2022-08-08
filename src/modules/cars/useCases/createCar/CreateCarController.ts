@@ -14,8 +14,6 @@ class CreateCarController {
       name,
     } = req.body;
 
-    console.log(req.body);
-
     const createCarUseCase = container.resolve(CreateCarUseCase);
 
     const car = await createCarUseCase.execute({

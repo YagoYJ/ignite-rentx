@@ -8,7 +8,11 @@ class ImportCategoryController {
     const { file } = req;
     const importCategoryUseCase = container.resolve(ImportCategoryUseCase);
 
-    importCategoryUseCase.execute(file);
+    if (file) {
+      importCategoryUseCase.execute(file);
+    } else {
+      return res.status(400).json({ error: "Can not read the file" });
+    }
 
     return res.status(201).send();
   }
