@@ -30,37 +30,37 @@ describe("Create Category", () => {
   });
 
   it("Shold not be able to create a duplicate category", async () => {
-    expect(async () => {
-      const category = {
-        name: "Category test",
-        description: "Category description test",
-      };
+    const category = {
+      name: "Category test",
+      description: "Category description test",
+    };
 
-      await createCategoryUseCase.execute(category);
+    await createCategoryUseCase.execute(category);
 
-      await createCategoryUseCase.execute(category);
-    }).rejects.toBeInstanceOf(AppError);
+    await expect(await createCategoryUseCase.execute(category)).rejects.toEqual(
+      new AppError("Category already exists")
+    );
   });
 
   it("Shold not be able to create a category without a name", async () => {
-    expect(async () => {
-      const category = {
-        name: "",
-        description: "Category description test",
-      };
+    const category = {
+      name: "",
+      description: "Category description test",
+    };
 
-      await createCategoryUseCase.execute(category);
-    }).rejects.toBeInstanceOf(AppError);
+    await expect(await createCategoryUseCase.execute(category)).rejects.toEqual(
+      new AppError("Name or description is missing")
+    );
   });
 
   it("Shold not be able to create a category without a description", async () => {
-    expect(async () => {
-      const category = {
-        name: "Category Test",
-        description: "",
-      };
+    const category = {
+      name: "Category Test",
+      description: "",
+    };
 
-      await createCategoryUseCase.execute(category);
-    }).rejects.toBeInstanceOf(AppError);
+    await expect(createCategoryUseCase.execute(category)).rejects.toEqual(
+      new AppError("Name or description is missing")
+    );
   });
 });

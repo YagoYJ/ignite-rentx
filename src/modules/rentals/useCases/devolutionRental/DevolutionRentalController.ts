@@ -1,11 +1,12 @@
 import { Request, Response } from "express";
 import { container } from "tsyringe";
+
 import { DevolutionRentalUseCase } from "./DevolutionRentalUseCase";
 
 class DevolutionRentalController {
-  async handle(req: Request, res: Response): Promise<Response> {
-    const { id: user_id } = req.user;
-    const { id } = req.params;
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { id: user_id } = request.user;
+    const { id } = request.params;
 
     const devolutionRentalUseCase = container.resolve(DevolutionRentalUseCase);
 
@@ -14,7 +15,7 @@ class DevolutionRentalController {
       user_id,
     });
 
-    return res.json(rental);
+    return response.status(200).json(rental);
   }
 }
 

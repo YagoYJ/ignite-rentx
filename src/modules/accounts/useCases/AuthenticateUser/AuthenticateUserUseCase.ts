@@ -3,8 +3,13 @@ import { compare } from "bcrypt";
 import { sign } from "jsonwebtoken";
 
 import { AppError } from "@shared/errors/AppError";
-import { IUsersRepository } from "@modules/accounts/infra/typeorm/repositories/IUsersRepository";
-import { UsersRepository } from "@modules/accounts/infra/typeorm/repositories/implementations/UsersRepository";
+import { IUsersRepository } from "@modules/accounts/repositories/IUsersRepository";
+import { UsersRepository } from "@modules/accounts/infra/typeorm/repositories/UsersRepository";
+import { UsersTokenRepository } from "@modules/accounts/infra/typeorm/repositories/UsersTokenRepository";
+import { IUsersTokenRepository } from "@modules/accounts/repositories/IUsersTokenRepository";
+import auth from "@config/auth";
+import { DayjsDateProvider } from "@shared/container/providers/DateProvider/implementations/DayjsDateProvider";
+import { IDateProvider } from "@shared/container/providers/DateProvider/IDateProvider";
 
 interface IRequest {
   email: string;
@@ -17,13 +22,18 @@ interface IResponse {
     email: string;
   };
   token: string;
+  refresh_token: string;
 }
 
 @injectable()
 export class AuthenticateUserUseCase {
   constructor(
     @inject(UsersRepository)
-    private usersRepository: IUsersRepository
+    private usersRepository: IUsersRepository,
+    @inject(UsersTokenRepository)
+    private usersTokenRepository: IUsersTokenRepository,
+    @inject(DayjsDateProvider)
+    private dayJsDateProvider: IDateProvider
   ) {}
 
   async execute({ email, password }: IRequest): Promise<IResponse> {
@@ -39,9 +49,34 @@ export class AuthenticateUserUseCase {
       throw new AppError("Email or password incorrect.");
     }
 
-    const token = sign({}, "4801702048df08e3c9647f6f557bfeca", {
+    const token = sign({}, auth.secret_token, {
       subject: user.id,
-      expiresIn: "1d",
+      expiresIn: auth.expires_in_token,
+    });
+
+    const refresh_token = sign(
+      {
+        email,
+      },
+      auth.secret_refresh_token,
+      {
+        subject: user.id,
+        expiresIn: auth.expires_in_refresh_token,
+      }
+    );
+
+    if (!user.id) {
+      throw new AppError("Invalid user id.");
+    }
+
+    const refresh_token_expires_date = this.dayJsDateProvider.addDays(
+      auth.expires_in_refresh_token_days
+    );
+
+    await this.usersTokenRepository.create({
+      user_id: user.id,
+      refresh_token,
+      expires_date: refresh_token_expires_date,
     });
 
     const tokenReturn: IResponse = {
@@ -50,6 +85,7 @@ export class AuthenticateUserUseCase {
         email: user.email,
       },
       token,
+      refresh_token,
     };
 
     return tokenReturn;

@@ -1,20 +1,19 @@
-import { IRentalsRepository } from "@modules/rentals/repositories/IRentalsRepository";
 import { Request, Response } from "express";
-import { container, inject, injectable } from "tsyringe";
+import { container } from "tsyringe";
+
 import { ListRentalsByUserUseCase } from "./ListRentalsByUserUseCase";
 
-@injectable()
 class ListRentalsByUserController {
-  async handle(req: Request, res: Response): Promise<Response> {
-    const { id } = req.user;
+  async handle(request: Request, response: Response): Promise<Response> {
+    const { id } = request.user;
 
     const listRentalsByUserUseCase = container.resolve(
       ListRentalsByUserUseCase
     );
 
-    const rentals = listRentalsByUserUseCase.execute(id);
+    const rentals = await listRentalsByUserUseCase.execute(id);
 
-    return res.json({ rentals });
+    return response.json(rentals);
   }
 }
 
