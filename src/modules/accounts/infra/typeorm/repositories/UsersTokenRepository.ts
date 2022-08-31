@@ -9,6 +9,18 @@ class UsersTokenRepository implements IUsersTokenRepository {
   constructor() {
     this.repository = getRepository(UserToken);
   }
+  findByUserIdAndRefreshToken(
+    user_id: string,
+    refresh_token: string
+  ): Promise<UserToken> {
+    throw new Error("Method not implemented.");
+  }
+  deleteById(id: string): Promise<void> {
+    throw new Error("Method not implemented.");
+  }
+  findByRefreshToken(refresh_token: string): Promise<UserToken> {
+    throw new Error("Method not implemented.");
+  }
 
   async create({
     user_id,
